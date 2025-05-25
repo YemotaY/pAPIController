@@ -27,8 +27,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Close</button>
-                <button type="button" class="btn btn-primary" id="saveGeneralSettings"><i class="fas fa-save"></i> Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Finish</button>
             </div>
         </div>
     </div>

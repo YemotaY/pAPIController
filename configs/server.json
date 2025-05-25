@@ -1,0 +1,7 @@
+{
+    "url": "https://api.example.com",
+    "port": 8080,
+    "timeout": 5000,
+    "retryAttempts": 3,
+    "security":{}
+}

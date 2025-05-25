@@ -1,34 +1,34 @@
 <?php
 
 /**
- * 0. Main 
- * UI for moderating and testing API endpoints.
- * Allows embedding request parameters in SQL queries or functions,
- * and supports static JSON responses.
+ * 0. Hauptdatei
+ * UI zur Moderation und zum Testen von API-Endpunkten.
+ * Ermöglicht das Einbetten von Anfrageparametern in SQL-Abfragen oder Funktionen
+ * und unterstützt statische JSON-Antworten.
  * 
- * Dependencies:
- * db_helpers.php -> Postgres helper functions
- * handler.php    -> Serves the APIs created in the UI
+ * Abhängigkeiten:
+ * db_helpers.php -> Postgres-Hilfsfunktionen
+ * handler.php    -> Bedient die im UI erstellten APIs
  */
 
-// Imports
+// Importe
 require_once 'db_helpers.php';
 require_once 'logs/singletonLog.php';
 
-// --- Configuration ---
+// --- Konfiguration ---
 $configFile = 'configs/api_config.json';
 $apis = file_exists($configFile) ? (json_decode(file_get_contents($configFile), true) ?: []) : [];
 
-// Group APIs
+// APIs gruppieren
 $groupedApis = [];
 foreach ($apis as $index => $api) {
     $group = $api['group'] ?? 'Default';
     $groupedApis[$group][] = array_merge($api, ['index' => $index]);
 }
 
-// --- Handle Form Submissions ---
+// --- Formularverarbeitung ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Delete API
+    // API löschen
     if (isset($_POST['delete'])) {
         unset($apis[$_POST['index']]);
         $apis = array_values($apis);
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit;
     }
-    // Add/Update API
+    // API hinzufügen/aktualisieren
     else {
         $apiData = [
             'name' => $_POST['name'] ?? '',
@@ -52,15 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'table' => $_POST['table_name'] ?? null
         ];
 
-        // Validate function if provided
+        // Funktion validieren, falls angegeben
         if (!empty($apiData['function'])) {
             $allowedFunctions = get_defined_functions()['user'];
             if (!in_array($apiData['function'], $allowedFunctions)) {
-                die("Invalid function name!");
+                die("Ungültiger Funktionsname!");
             }
         }
 
-        // Toggle active state
+        // Aktiv-Status umschalten
         if (isset($_POST['index'], $_POST['active'])) {
             $index = $_POST['index'];
             $active = $_POST['active'] === '1';
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $apis[$index]['active'] = $active;
             }
         }
-        // Edit or add new API
+        // API bearbeiten oder neue hinzufügen
         elseif (isset($_POST['edit_index']) && $_POST['edit_index'] !== '') {
             $apis[$_POST['edit_index']] = $apiData;
         } else {
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// --- Helper Functions ---
+// --- Hilfsfunktionen ---
 function displayData($data)
 {
     return htmlspecialchars(json_encode($data, JSON_PRETTY_PRINT));
@@ -87,7 +87,7 @@ function displayData($data)
 // --- HTML UI ---
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8">
@@ -96,11 +96,11 @@ function displayData($data)
     <link href="./src/bootstrap.min.css" rel="stylesheet">
     <script src="src/jquery-3.6.0.min.js"></script>
     <script src="src/bootstrap.bundle.min.js"></script>
-    <link href="src/prism/prism.css" rel="stylesheet"><!--Syntax Higlighting-->
-    <script src="src/prism/prism.js"></script><!--Syntax Higlighting-->
+    <link href="src/prism/prism.css" rel="stylesheet"><!--Syntax Highlighting-->
+    <script src="src/prism/prism.js"></script><!--Syntax Highlighting-->
 
     <script src="src/chart.js"></script>
-    <!-- Add Font Awesome for icons -->
+    <!-- Font Awesome für Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     </link>
     <link href="./src/ui_styles.css" rel="stylesheet">
@@ -114,17 +114,17 @@ function displayData($data)
 <body>
     <div class="container mt-4">
         <h2 class="mb-4">API Builder</h2>
-        <!-- Add API Button -->
+        <!-- API hinzufügen Button -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
                 <i class="fas fa-plus"></i> Schnittstelle
             </button>
             <div>
                 <button class="btn btn-secondary me-2 settings-btn" data-bs-toggle="modal" data-bs-target="#generalSettingsModal">
-                    <i class="fas fa-cog"></i> General Settings
+                    <i class="fas fa-cog"></i> Allgemeine Einstellungen
                 </button>
                 <button class="btn btn-info ssl-btn" data-bs-toggle="modal" data-bs-target="#sslSettingsModal">
-                    <i class="fas fa-shield-alt"></i> SSL Settings
+                    <i class="fas fa-shield-alt"></i> SSL Einstellungen
                 </button>
                 <button class="btn btn-primary  postman-btn"
                     data-endpoint="<?= htmlspecialchars($api['endpoint']) ?>"
@@ -172,7 +172,7 @@ function displayData($data)
                                                 <form method="POST" class="d-inline">
                                                     <input type="hidden" name="index" value="<?= $api['index'] ?>">
                                                     <button type="submit" name="delete" class="btn btn-danger btn-sm">
-                                                        <i class="fas fa-trash-alt"></i> Delete
+                                                        <i class="fas fa-trash-alt"></i> Löschen
                                                     </button>
                                                 </form>
                                                 <button class="btn btn-info btn-sm stats-btn"
@@ -180,7 +180,7 @@ function displayData($data)
                                                     data-bs-target="#statsModal"
                                                     data-endpoint="<?= htmlspecialchars($api['endpoint']) ?>"
                                                     data-method="<?= htmlspecialchars($api['method']) ?>">
-                                                    <i class="fas fa-chart-pie"></i> Stats
+                                                    <i class="fas fa-chart-pie"></i> Statistiken
                                                 </button>
                                                 <button class="btn btn-outline-secondary btn-sm code-gen-btn"
                                                     data-bs-toggle="modal"
@@ -205,7 +205,7 @@ function displayData($data)
                                                     data-bs-target="#testModal"
                                                     data-endpoint="<?= htmlspecialchars($api['endpoint']) ?>"
                                                     data-method="<?= htmlspecialchars($api['method']) ?>">
-                                                    <i class="fas fa-paper-plane"></i> Test
+                                                    <i class="fas fa-paper-plane"></i> Testen
                                                 </button>
 
                                                 <button class="btn btn-warning btn-sm edit-btn"
@@ -221,7 +221,7 @@ function displayData($data)
                                                     data-query="<?= htmlspecialchars($api['query'] ?? '') ?>"
                                                     data-param-map='<?= !empty($api['param_map']) ? json_encode($api['param_map']) : '' ?>'
                                                     data-group="<?= htmlspecialchars($api['group'] ?? '') ?>">
-                                                    <i class="fas fa-pen"></i> Edit
+                                                    <i class="fas fa-pen"></i> Bearbeiten
                                                 </button>
 
 
@@ -232,18 +232,10 @@ function displayData($data)
                                                 <input class="form-check-input toggle-handle" type="checkbox"
                                                     <?= $api['active'] ? 'checked' : '' ?>
                                                     data-index="<?= $api['index'] ?>">
-                                                <label class="form-check-label">Active</label>
+                                                <label class="form-check-label">Aktiv</label>
                                             </div>
                                             <!--Kommentarfeld für API-Eintrag-->
-                                            <form method="POST" class="comment-form d-flex align-items-center mb-1 flex-grow-1">
-                                                <input type="hidden" name="index" value="<?= $api['index'] ?>">
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" name="comment" class="form-control" placeholder="Kommentar hinzufügen..." value="<?= isset($api['comment']) ? htmlspecialchars($api['comment']) : '' ?>">
-                                                    <button class="btn btn-outline-primary" type="submit" name="save_comment">
-                                                        <i class="fas fa-comment"></i>
-                                                    </button>
-                                                </div>
-                                            </form>
+
                                             <?php if (!empty($api['comment'])): ?>
                                                 <div class="ms-2 text-muted small mb-1 flex-shrink-0">
                                                     <i class="fas fa-comment-dots"></i> <?= htmlspecialchars($api['comment']) ?>
@@ -261,7 +253,7 @@ function displayData($data)
     </div>
 
 
-    <!-- JQUERY UI MANAGEMENT -->
+    <!-- JQUERY UI VERWALTUNG -->
     <script src="src/ui_logic.js"></script>
     <script src="src/partials/postman_modal.js"></script>
 

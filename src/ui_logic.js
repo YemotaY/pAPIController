@@ -441,7 +441,6 @@ $('#saveGeneralSettings').click(function() {
     // Speichert den Authentifizierungstyp
     const authType = $('#authType').val();
     localStorage.setItem('authType', authType);
-    alert('Allgemeine Einstellungen gespeichert (Demo).');
     // Das Modal bleibt offen
 });
 // Wendet beim Laden der Seite den Dark Mode sofort an (ganz oben im Skript für sofortigen Effekt)
