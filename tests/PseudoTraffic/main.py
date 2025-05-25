@@ -114,7 +114,7 @@ def main(base_url):
         if query_params:
             url += '?' + urlencode(query_params)
         
-        make_error = random.random() < 0.6
+        make_error = random.random() < 0.2
         if make_error:
             error_applied = apply_error(endpoint, path_params, body_params, query_params)
             if not error_applied:

@@ -7,7 +7,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <pre class="p-3 bg-light rounded" id="codeContent" style="max-height: 70vh;"></pre>
+                <pre class="p-3 bg-light rounded" style="max-height: 70vh;"><code id="codeContent"></code></pre>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

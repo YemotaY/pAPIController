@@ -10,12 +10,14 @@
             </div>
             <div class="modal-body">
                 <div class="row">
+                    <!-- Dropdown for selecting time period //TBD Im backend
                     <select id="timePeriodSelect">
                         <option value="hour">Last Hour</option>
                         <option value="day">Last Day</option>
                         <option value="week">Last Week</option>
                         <option value="all">All Time</option>
                     </select>
+                    -->	
                     <div class="col-md-6">
                         <dl class="row">
                             <dt class="col-6">Total Requests</dt>

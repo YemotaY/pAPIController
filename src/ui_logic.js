@@ -169,54 +169,78 @@ let requestPieChart = null;
 let responseTimeChart = null;
 let trafficChart = null;
 
+function updateCharts(stats) {
+    // Pie Chart
+    if (requestPieChart) {
+        requestPieChart.data.datasets[0].data = [stats.success_count, stats.error_count];
+        requestPieChart.update();
+    }
+    // Response Time Chart
+    if (responseTimeChart) {
+        responseTimeChart.data.labels = stats.response_times ? stats.response_times.map((_, i) => `Req ${i+1}`) : [];
+        responseTimeChart.data.datasets[0].data = stats.response_times ? stats.response_times.map(t => t * 1000) : [];
+        responseTimeChart.update();
+    }
+    // Traffic Chart
+    if (trafficChart) {
+        trafficChart.data.labels = ['00-04', '04-08', '08-12', '12-16', '16-20', '20-24'];
+        trafficChart.data.datasets[0].data = stats.hourly_traffic || [];
+        trafficChart.update();
+    }
+}
+
 function renderCharts(stats) {
-    if (requestPieChart) requestPieChart.destroy();
-    if (responseTimeChart) responseTimeChart.destroy();
-    if (trafficChart) trafficChart.destroy();
-    requestPieChart = new Chart(document.getElementById('requestPieChart'), {
-        type: 'pie',
-        data: {
-            labels: ['Success', 'Errors'],
-            datasets: [{
-                data: [stats.success_count, stats.error_count],
-                backgroundColor: ['#4CAF50', '#F44336'],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            plugins: { legend: { position: 'bottom' } }
-        }
-    });
-    responseTimeChart = new Chart(document.getElementById('responseTimeChart'), {
-        type: 'line',
-        data: {
-            labels: stats.response_times ? stats.response_times.map((_, i) => `Req ${i+1}`) : [],
-            datasets: [{
-                label: 'Response Time (ms)',
-                data: stats.response_times ? stats.response_times.map(t => t * 1000) : [],
-                borderColor: '#2196F3',
-                tension: 0.4,
-                fill: false
-            }]
-        },
-        options: {
-            scales: { y: { beginAtZero: true, title: { display: true, text: 'ms' } } }
-        }
-    });
-    trafficChart = new Chart(document.getElementById('trafficChart'), {
-        type: 'bar',
-        data: {
-            labels: ['00-04', '04-08', '08-12', '12-16', '16-20', '20-24'],
-            datasets: [{
-                label: 'Requests',
-                data: stats.hourly_traffic || [],
-                backgroundColor: '#FF9800'
-            }]
-        },
-        options: {
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+    if (!requestPieChart) {
+        requestPieChart = new Chart(document.getElementById('requestPieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Success', 'Errors'],
+                datasets: [{
+                    data: [stats.success_count, stats.error_count],
+                    backgroundColor: ['#4CAF50', '#F44336'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+    if (!responseTimeChart) {
+        responseTimeChart = new Chart(document.getElementById('responseTimeChart'), {
+            type: 'line',
+            data: {
+                labels: stats.response_times ? stats.response_times.map((_, i) => `Req ${i+1}`) : [],
+                datasets: [{
+                    label: 'Response Time (s)',
+                    data: stats.response_times ? stats.response_times.map(t => t ) : [],
+                    borderColor: '#2196F3',
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'ms' } } }
+            }
+        });
+    }
+    if (!trafficChart) {
+        trafficChart = new Chart(document.getElementById('trafficChart'), {
+            type: 'bar',
+            data: {
+                labels: ['00-04', '04-08', '08-12', '12-16', '16-20', '20-24'],
+                datasets: [{
+                    label: 'Requests',
+                    data: stats.hourly_traffic || [],
+                    backgroundColor: '#FF9800'
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+    updateCharts(stats);
 }
 
 function fetchAndRenderStats(endpoint, method, period) {
@@ -264,9 +288,9 @@ $('#statsModal').on('hidden.bs.modal', function() {
     clearInterval(statsInterval);
     statsInterval = null;
     currentStatsContext = { endpoint: null, method: null, period: null };
-    if (requestPieChart) requestPieChart.destroy();
-    if (responseTimeChart) responseTimeChart.destroy();
-    if (trafficChart) trafficChart.destroy();
+    if (requestPieChart) { requestPieChart.destroy(); requestPieChart = null; }
+    if (responseTimeChart) { responseTimeChart.destroy(); responseTimeChart = null; }
+    if (trafficChart) { trafficChart.destroy(); trafficChart = null; }
 });
 
 // --- Test Request Handler ---
@@ -360,20 +384,22 @@ $('.code-gen-btn').click(async function() {
     const endpoint = $(this).data('endpoint');
     const method = $(this).data('method').toLowerCase();
     try {
-        const response = await fetch(`code-generator/${type}_example.${type}`);
+        const response = await fetch(`./code-generator/${type}_example.txt`);
         let code = await response.text();
         // Replace placeholders with actual values
         code = code.replace(/{{ENDPOINT}}/g, endpoint)
                    .replace(/{{METHOD}}/g, method)
                    .replace(/{{BASE_URL}}/g, baseUrl);
-        // Optionally, replace more placeholders if needed
+        // Set code content and language for Prism highlighting
         const lang = type === 'js' ? 'javascript' : 'php';
-        $('#codeContent').html(Prism.highlight(code, Prism.languages[lang], lang));
+        $('#codeContent').text(code).attr('class', `language-${lang}`);
+        Prism.highlightElement($('#codeContent')[0]);
         $('#codeModalTitle').text(`${type.toUpperCase()} Client Code`);
     } catch (error) {
         $('#codeContent').text('Error loading code template: ' + error.message);
     }
 });
+
 function copyCode() {
     const code = $('#codeContent').text();
     navigator.clipboard.writeText(code);

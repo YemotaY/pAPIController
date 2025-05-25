@@ -133,8 +133,13 @@ function get_statistics($params)
             'error_count' => 0,
             'total_response_time' => 0,
             'average_response_time' => 0,
-            'last_called' => null
+            'last_called' => null,
+            'min_response_time' => null,
+            'max_response_time' => null,
+            'response_times' => []
         ];
+        // Initialize 6 bins for 4-hour blocks
+        $hourly_bins = array_fill(0, 6, 0);
         // Beispielhafte Stundenstatistik (kann angepasst werden)
         $stats['hourly_traffic'] = [
             '09:00' => 5,
@@ -162,7 +167,6 @@ function get_statistics($params)
                 $logger->log("Skipping invalid log entry", ['raw_line' => $line]);
                 continue;
             }
-
             $entryTime = strtotime($entry['timestamp']);
             if ($entryTime < $startTimestamp) {
                 // Überspringt Einträge außerhalb des Zeitbereichs
@@ -172,17 +176,30 @@ function get_statistics($params)
                 ]);
                 continue;
             }
-
             // Prüft, ob der Eintrag zum gewünschten Endpoint und zur Methode passt
             if ($entry['endpoint'] === $endpoint && $entry['method'] === $method) {
+                // Fix: If duration is > 60, treat as ms and convert to seconds
+                $duration = $entry['duration'];
+                if ($duration > 60) {
+                    $duration = $duration / 1000;
+                }
                 $stats['request_count']++;
-                $stats['total_response_time'] += $entry['duration'];
-
+                $stats['total_response_time'] += $duration;
+                $stats['response_times'][] = $duration;
+                if ($stats['min_response_time'] === null || $duration < $stats['min_response_time']) {
+                    $stats['min_response_time'] = $duration;
+                }
+                if ($stats['max_response_time'] === null || $duration > $stats['max_response_time']) {
+                    $stats['max_response_time'] = $duration;
+                }
                 $entry['success'] ? $stats['success_count']++ : $stats['error_count']++;
-
                 if (!$stats['last_called'] || $entryTime > strtotime($stats['last_called'])) {
                     $stats['last_called'] = $entry['timestamp'];
                 }
+                // --- Hourly traffic binning ---
+                $hour = (int)date('G', $entryTime); // 0-23
+                $bin = intdiv($hour, 4); // 0-5
+                $hourly_bins[$bin]++;
 
                 $logger->log("Processed log entry", [
                     'entry' => $entry,
@@ -191,16 +208,26 @@ function get_statistics($params)
             }
         }
         fclose($handle);
-
         // Durchschnittliche Antwortzeit berechnen
         if ($stats['request_count'] > 0) {
-            $stats['average_response_time'] = $stats['total_response_time'] / $stats['request_count'];
+            // Wenn die Dauer offensichtlich zu groß ist, wurde sie vermutlich in ms statt s gespeichert
+            $avg = $stats['total_response_time'] / $stats['request_count'];
+            if ($avg > 1000) { // z.B. 80000ms = 80s
+                $avg = $avg / 1000;
+                $stats['total_response_time'] = $stats['total_response_time'] / 1000;
+                $stats['min_response_time'] = $stats['min_response_time'] / 1000;
+                $stats['max_response_time'] = $stats['max_response_time'] / 1000;
+                $stats['response_times'] = array_map(function($v){ return $v / 1000; }, $stats['response_times']);
+            }
+            $stats['average_response_time'] = $avg;
             $logger->log("Calculated average response time", [
                 'total_time' => $stats['total_response_time'],
                 'request_count' => $stats['request_count'],
                 'average' => $stats['average_response_time']
             ]);
         }
+        // Set hourly_traffic as array for frontend (6 bins)
+        $stats['hourly_traffic'] = $hourly_bins;
 
         $logger->log("Final statistics calculated", ['stats' => $stats]);
         return $stats;

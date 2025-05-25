@@ -98,6 +98,7 @@ function displayData($data)
     <script src="src/bootstrap.bundle.min.js"></script>
     <link href="src/prism/prism.css" rel="stylesheet"><!--Syntax Higlighting-->
     <script src="src/prism/prism.js"></script><!--Syntax Higlighting-->
+
     <script src="src/chart.js"></script>
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -159,7 +160,7 @@ function displayData($data)
                         <div class="accordion-body p-0">
                             <?php foreach ($groupApis as $api): ?>
                                 <div class="card api-card mb-2 border-start border-4 
-                    <?= $api['active'] ? 'border-success' : 'border-warning' ?>">
+                                    <?= $api['active'] ? 'border-success' : 'border-warning' ?>">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div>
@@ -226,11 +227,28 @@ function displayData($data)
 
                                             </div>
                                         </div>
-                                        <div class="form-check form-switch mt-2">
-                                            <input class="form-check-input toggle-handle" type="checkbox"
-                                                <?= $api['active'] ? 'checked' : '' ?>
-                                                data-index="<?= $api['index'] ?>">
-                                            <label class="form-check-label">Active</label>
+                                        <div class="d-flex align-items-center mt-2 flex-wrap">
+                                            <div class="form-check form-switch me-3 mb-1">
+                                                <input class="form-check-input toggle-handle" type="checkbox"
+                                                    <?= $api['active'] ? 'checked' : '' ?>
+                                                    data-index="<?= $api['index'] ?>">
+                                                <label class="form-check-label">Active</label>
+                                            </div>
+                                            <!--Kommentarfeld für API-Eintrag-->
+                                            <form method="POST" class="comment-form d-flex align-items-center mb-1 flex-grow-1">
+                                                <input type="hidden" name="index" value="<?= $api['index'] ?>">
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" name="comment" class="form-control" placeholder="Kommentar hinzufügen..." value="<?= isset($api['comment']) ? htmlspecialchars($api['comment']) : '' ?>">
+                                                    <button class="btn btn-outline-primary" type="submit" name="save_comment">
+                                                        <i class="fas fa-comment"></i>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                            <?php if (!empty($api['comment'])): ?>
+                                                <div class="ms-2 text-muted small mb-1 flex-shrink-0">
+                                                    <i class="fas fa-comment-dots"></i> <?= htmlspecialchars($api['comment']) ?>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -241,225 +259,11 @@ function displayData($data)
             </div>
         <?php endforeach; ?>
     </div>
-    <!-- Code Preview Modal -->
-    <div class="modal fade" id="codeModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="codeModalTitle"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <pre class="p-3 bg-light rounded" id="codeContent" style="max-height: 70vh;"></pre>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Close
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="copyCode()">
-                        <i class="fas fa-copy"></i> Copy
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Statistics Modal -->
-    <div class="modal fade" id="statsModal" tabindex="-1"
-        aria-labelledby="statsModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">API Statistics</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <select id="timePeriodSelect">
-                            <option value="hour">Last Hour</option>
-                            <option value="day">Last Day</option>
-                            <option value="week">Last Week</option>
-                            <option value="all">All Time</option>
-                        </select>
-                        <div class="col-md-6">
-                            <dl class="row">
-                                <dt class="col-6">Total Requests</dt>
-                                <dd class="col-6" id="statTotalRequests">0</dd>
 
-                                <dt class="col-6">Success Rate</dt>
-                                <dd class="col-6" id="statSuccessRate">0%</dd>
 
-                                <dt class="col-6">Avg Response</dt>
-                                <dd class="col-6" id="statAvgResponse">0ms</dd>
-
-                                <dt class="col-6">Last Called</dt>
-                                <dd class="col-6" id="statLastCalled">Never</dd>
-                            </dl>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6>Request Distribution</h6>
-                                    <canvas id="requestPieChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6>Response Times</h6>
-                                    <canvas id="responseTimeChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6>Hourly Traffic</h6>
-                                    <canvas id="trafficChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- General Settings Modal -->
-    <div class="modal fade" id="generalSettingsModal" tabindex="-1" aria-labelledby="generalSettingsModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="generalSettingsModalLabel"><i class="fas fa-cog"></i> General Settings</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="generalSettingsForm">
-                        <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="darkModeSwitch">
-                            <label class="form-check-label" for="darkModeSwitch">Enable Dark Mode</label>
-                        </div>
-                        <div class="mb-3">
-                            <label for="authType" class="form-label">Authentication Type</label>
-                            <select class="form-select" id="authType">
-                                <option value="none">None</option>
-                                <option value="basic">Basic Auth</option>
-                                <option value="token">Token</option>
-                            </select>
-                        </div>
-                        <div class="mb-3" id="authDetails" style="display:none;">
-                            <label for="authDetailsInput" class="form-label">Auth Details</label>
-                            <input type="text" class="form-control" id="authDetailsInput" placeholder="Token or credentials">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Close</button>
-                    <button type="button" class="btn btn-primary" id="saveGeneralSettings"><i class="fas fa-save"></i> Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- SSL Settings Modal -->
-    <div class="modal fade" id="sslSettingsModal" tabindex="-1" aria-labelledby="sslSettingsModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="sslSettingsModalLabel"><i class="fas fa-shield-alt"></i> SSL Settings</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="sslSettingsForm">
-                        <div class="mb-3">
-                            <label for="sslCertPath" class="form-label">Certificate Path</label>
-                            <input type="text" class="form-control" id="sslCertPath" placeholder="/path/to/cert.pem">
-                        </div>
-                        <div class="mb-3">
-                            <label for="sslKeyPath" class="form-label">Private Key Path</label>
-                            <input type="text" class="form-control" id="sslKeyPath" placeholder="/path/to/key.pem">
-                        </div>
-                        <div class="mb-3">
-                            <label for="sslCAPath" class="form-label">CA Bundle Path (optional)</label>
-                            <input type="text" class="form-control" id="sslCAPath" placeholder="/path/to/ca-bundle.crt">
-                        </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="sslForce">
-                            <label class="form-check-label" for="sslForce">Force HTTPS</label>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> Close</button>
-                    <button type="button" class="btn btn-primary" id="saveSSLSettings"><i class="fas fa-save"></i> Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Postman Modal (Manual API Tester) -->
-    <div class="modal fade" id="postmanModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-flask"></i> API Manual Tester</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="postmanForm">
-                        <div class="row mb-3">
-                            <div class="col-md-2">
-                                <select class="form-select" id="pmMethod">
-                                    <option>GET</option>
-                                    <option>POST</option>
-                                    <option>PUT</option>
-                                    <option>PATCH</option>
-                                    <option>DELETE</option>
-                                </select>
-                            </div>
-                            <div class="col-md-7">
-                                <input type="text" class="form-control" id="pmEndpoint" placeholder="/api/endpoint">
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-success w-100"><i class="fas fa-play"></i> Send</button>
-                            </div>
-                        </div>
-                        <ul class="nav nav-tabs mb-3" id="pmTabs">
-                            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#pmHeaders">Headers</a></li>
-                            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#pmQuery">Query</a></li>
-                            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#pmBody">Body</a></li>
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane fade show active" id="pmHeaders">
-                                <div id="pmHeadersContainer"></div>
-                                <button type="button" class="btn btn-secondary btn-sm mt-2" id="pmAddHeader"><i class="fas fa-plus"></i> Add Header</button>
-                            </div>
-                            <div class="tab-pane fade" id="pmQuery">
-                                <div id="pmQueryContainer"></div>
-                                <button type="button" class="btn btn-secondary btn-sm mt-2" id="pmAddQuery"><i class="fas fa-plus"></i> Add Query Param</button>
-                            </div>
-                            <div class="tab-pane fade" id="pmBody">
-                                <textarea class="form-control" id="pmBodyInput" rows="5" placeholder="JSON body (for POST/PUT/PATCH)"></textarea>
-                            </div>
-                        </div>
-                    </form>
-                    <hr>
-                    <h6>Response</h6>
-                    <pre id="pmResponse" class="bg-light p-3 rounded" style="max-height: 40vh;"></pre>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- JQUERY UI MANAGEMENT -->
     <script src="src/ui_logic.js"></script>
-    <script src="postman_modal.js"></script>
+    <script src="src/partials/postman_modal.js"></script>
 
 </body>
 

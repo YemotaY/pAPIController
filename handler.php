@@ -141,7 +141,7 @@ try {
             }
 
             // Misst die Bearbeitungsdauer und aktualisiert die API-Metadaten
-            $duration = round((microtime(true) - $startTime) * 1000, 2);
+            $duration = round(microtime(true) - $startTime, 4); // seconds, with ms precision
             updateApiMetadata($api, $duration, true);
             
             # $logger->log("Request processing time: {$duration}ms");
@@ -156,7 +156,7 @@ try {
             exit;
         } catch (PDOException $e) {
             // Fehlerbehandlung bei Datenbankfehlern
-            $duration = round((microtime(true) - $startTime) * 1000, 2);
+            $duration = round(microtime(true) - $startTime, 4);
             updateApiMetadata($api, $duration, false);
             
             # $logger->log("DATABASE ERROR: " . $e->getMessage(), [
@@ -169,7 +169,7 @@ try {
             exit;
         } catch (Exception $e) {
             // Fehlerbehandlung bei sonstigen Fehlern
-            $duration = round((microtime(true) - $startTime) * 1000, 2);
+            $duration = round(microtime(true) - $startTime, 4);
             updateApiMetadata($api, $duration, false);
             
             # $logger->log("PROCESSING ERROR: " . $e->getMessage(), [
