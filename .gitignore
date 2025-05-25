@@ -1,0 +1,37 @@
+# Ignore config backups and logs
+configs/api_config_backup*.json
+configs/api_history.log
+configs/api_metadata.json
+logs/
+output.log
+
+# Ignore local database configs (if sensitive)
+configs/db_config.json
+
+# Ignore test virtual environments and Python cache
+/tests/**/venv*/
+/tests/**/__pycache__/
+
+# Ignore node_modules if ever used
+node_modules/
+
+# Ignore OS/IDE files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Ignore generated code
+code-generator/*.js
+code-generator/*.php
+!code-generator/js_example.js
+!code-generator/php_example.php
+
+# Ignore compiled files
+*.pyc
+*.pyo
+
+# Ignore environment files
+.env

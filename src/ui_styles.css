@@ -1,0 +1,238 @@
+.api-card {
+  margin-bottom: 1rem;
+}
+
+.toggle-handle {
+  cursor: pointer;
+}
+
+pre {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.25rem;
+}
+
+#statsModal dt {
+    font-weight: 500;
+}
+
+#statsModal dd {
+    margin-bottom: 0.5rem;
+}
+
+.progress {
+    height: 1.5rem;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.5s ease;
+}
+
+#statsModal .card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#statsModal canvas {
+    max-height: 250px;
+}
+
+#statsModal .card-body h6 {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+/* Style the period selector container */
+.stats-period-container {
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Style the period label */
+.stats-period-label {
+    font-family: 'Arial', sans-serif;
+    color: #444;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Style the period select dropdown */
+#timePeriodSelect {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 14px;
+    color: #333;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 10px auto;
+    min-width: 180px;
+}
+
+#timePeriodSelect:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+/* Style dropdown options */
+#timePeriodSelect option {
+    padding: 8px;
+    background-color: #fff;
+    color: #333;
+}
+
+/* Dark mode styles */
+html.dark-mode {
+  background-color: #181a1b !important;
+  color: #e0e0e0 !important;
+}
+
+html.dark-mode .container,
+html.dark-mode .card,
+html.dark-mode .modal-content {
+  background-color: #23272b !important;
+  color: #e0e0e0 !important;
+}
+
+html.dark-mode .accordion-button,
+html.dark-mode .accordion-body,
+html.dark-mode body,
+html.dark-mode .form-control,
+html.dark-mode .form-select,
+html.dark-mode .modal-header,
+html.dark-mode .modal-footer {
+  background-color: #23272b !important;
+  color: #e0e0e0 !important;
+}
+
+html.dark-mode .btn-primary,
+html.dark-mode .btn-secondary,
+html.dark-mode .btn-info,
+html.dark-mode .btn-success,
+html.dark-mode .btn-warning,
+html.dark-mode .btn-danger {
+  border: none;
+}
+
+html.dark-mode .btn-primary {
+  background-color: #1976d2 !important;
+}
+html.dark-mode .btn-secondary {
+  background-color: #424242 !important;
+}
+html.dark-mode .btn-info {
+  background-color: #0288d1 !important;
+}
+html.dark-mode .btn-success {
+  background-color: #388e3c !important;
+}
+html.dark-mode .btn-warning {
+  background-color: #ffa000 !important;
+}
+html.dark-mode .btn-danger {
+  background-color: #d32f2f !important;
+}
+
+html.dark-mode pre,
+html.dark-mode #codeContent,
+html.dark-mode .bg-light {
+  background: #23272b !important;
+  color: #e0e0e0 !important;
+}
+
+html.dark-mode .form-check-label,
+html.dark-mode .form-text,
+html.dark-mode .form-label,
+html.dark-mode .modal-title,
+html.dark-mode .accordion-header,
+html.dark-mode .accordion-button {
+  color: #e0e0e0 !important;
+}
+
+html.dark-mode .border-success {
+  border-left-color: #66bb6a !important;
+}
+html.dark-mode .border-warning {
+  border-left-color: #ffa726 !important;
+}
+
+html.dark-mode .progress {
+  background-color: #333 !important;
+}
+html.dark-mode .progress-bar {
+  background-color: #1976d2 !important;
+}
+
+html.dark-mode #timePeriodSelect {
+  background-color: #23272b !important;
+  color: #e0e0e0 !important;
+  border: 1px solid #444 !important;
+}
+html.dark-mode #timePeriodSelect option {
+  background-color: #23272b !important;
+  color: #e0e0e0 !important;
+}
+
+html.dark-mode .accordion-button:not(.collapsed) {
+  background-color: #23272b !important;
+  color: #fff !important;
+}
+
+html.dark-mode .modal-header,
+html.dark-mode .modal-footer {
+  border-color: #333 !important;
+}
+
+html.dark-mode .form-control:focus,
+html.dark-mode .form-select:focus {
+  background-color: #23272b !important;
+  color: #e0e0e0 !important;
+  border-color: #1976d2 !important;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+html.dark-mode .accordion-item {
+  background-color: #23272b !important;
+}
+
+html.dark-mode .stats-period-label {
+  color: #bbb !important;
+}
+
+html.dark-mode .badge.bg-primary {
+  background-color: #1976d2 !important;
+}
+
+html.dark-mode .badge.bg-secondary {
+  background-color: #424242 !important;
+}
+
+html.dark-mode .card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+}
+
+html.dark-mode .btn-close {
+  filter: invert(1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .stats-period-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    #timePeriodSelect {
+        width: 100%;
+    }
+}
