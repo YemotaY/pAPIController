@@ -1,119 +1,130 @@
-# Request Parsing
-Client Request
-     │
-     ▼
-Parse HTTP Method (GET/POST/PUT/DELETE)
-     │
-     ▼
-Extract Base Path (e.g., /api/v1 from URL)
-     │
-     ▼
-Derive Endpoint Path (e.g., /users/{id})
-     │
-     ▼
-Read Request Body (for non-GET/DELETE):
+# Anfrage-Parsing
+
+```
+Client-Anfrage
+   │
+   ▼
+HTTP-Methode ermitteln (GET/POST/PUT/DELETE)
+   │
+   ▼
+Basis-Pfad extrahieren (z.B. /api/v1 aus URL)
+   │
+   ▼
+Endpoint-Pfad ableiten (z.B. /users/{id})
+   │
+   ▼
+Request-Body einlesen (bei nicht-GET/DELETE):
    ┌───────────────┐
    │php://input    │
    └───────────────┘
-           │
-           ▼
-     JSON Decode → Store in $requestData
-           │
-           ▼
-    Validate JSON Syntax
-           │
-           ▼
-      Log raw input
+       │
+       ▼
+JSON dekodieren → Speichern in $requestData
+       │
+       ▼
+JSON-Syntax validieren
+       │
+       ▼
+Rohdaten loggen
+```
 
+# Endpoint-Abgleich
 
-
-# Endpoint Matching
-
-Iterate APIs in config:
+```
+APIs aus Konfiguration durchlaufen
    │
    ▼
-Check: Active? → Method Match? → Path Pattern Match?
+Prüfen: Aktiv? → Methode passt? → Pfad-Muster passt?
    │
    ▼
-On Match:
-   Extract Path Parameters (e.g., {id} → 123)
+Bei Treffer:
+   Pfad-Parameter extrahieren (z.B. {id} → 123)
    │
    ▼
-Start Execution Timer
+Ausführungs-Timer starten
+```
 
+# Anfrageverarbeitung
 
-# Request Processing
+```
+Verzweigung je nach API-Typ:
 
-Branch Based on API Type:
-├─ Database Query API (has 'query' config)
-│  │
-│  ▼
-│  handleDatabaseOperation()
-│  │
-│  ▼
-│  Build SQL from template (replace :placeholders)
-│  │
-│  ▼
-│  Execute with parameters from:
-│  - Path params (/{id})
-│  - Request body (POST/PUT data)
-│
-└─ Function API (has 'function' config)
+┌─────────────────────────────────────────────┐
+│ Datenbank-API (mit 'query'-Konfiguration)   │
+└─────────────────────────────────────────────┘
    │
    ▼
-   Parameter Mapping via param_map:
-   ┌───────────────┐
-   │ path.id       │→ From URL /users/123
-   │ body.email    │→ From JSON {email: "test@test.com"}
-   │ query.page    │→ From ?page=2
-   └───────────────┘
-           │
-           ▼
-   Validate function exists
-           │
-           ▼
-   Execute function with mapped params
-
-# Response Generation:
-
-If Success:
+handleDatabaseOperation()
+   │
    ▼
-Update API Stats (success count, response time)
+SQL aus Template bauen (ersetze :Platzhalter)
+   │
    ▼
-Set HTTP Status Code:
-   - 201 Created for POST
-   - 200 OK otherwise
+Ausführen mit Parametern aus:
+- Pfad-Parametern (/{id})
+- Request-Body (POST/PUT-Daten)
+
+ODER
+
+┌─────────────────────────────────────────────┐
+│ Funktions-API (mit 'function'-Konfiguration)│
+└─────────────────────────────────────────────┘
+   │
    ▼
-Return JSON response
-
-If Error:
+Parameter-Mapping via param_map:
+   path.id    → aus URL /users/123
+   body.email → aus JSON {email: "test@test.com"}
+   query.page → aus ?page=2
+   │
    ▼
-Update API Stats (error count)
+Funktion validieren
+   │
    ▼
-Set Error Code (400/500/404)
+Funktion mit gemappten Parametern ausführen
+```
+
+# Antwortgenerierung
+
+```
+Bei Erfolg:
    ▼
-Return JSON error message
+API-Statistiken aktualisieren (Erfolgszähler, Antwortzeit)
+   ▼
+HTTP-Status setzen:
+   - 201 Created bei POST
+   - 200 OK sonst
+   ▼
+JSON-Antwort zurückgeben
 
+Bei Fehler:
+   ▼
+API-Statistiken aktualisieren (Fehlerzähler)
+   ▼
+Fehlercode setzen (400/500/404)
+   ▼
+JSON-Fehlermeldung zurückgeben
+```
 
+# Datenquellen-Diagramm
 
-# Data Sources Diagram
-
+```
 ┌───────────────┐       ┌───────────────┐
-│  URL Path     │       │  Request Body │
+│  URL-Pfad     │       │  Request-Body │
 │ /users/{id}   │       │  JSON/Form    │
 └───────┬───────┘       └───────┬───────┘
         │                       │
         ├─────────┐     ┌───────┘
         ▼         ▼     ▼
 ┌───────────────────────────────┐
-│  Parameter Mapping System     │
-│  path.id → 123               │
-│  body.email → test@test.com  │
-│  query.page → 2              │
+│  Parameter-Mapping-System     │
+│  path.id → 123                │
+│  body.email → test@test.com   │
+│  query.page → 2               │
 └───────────────────────────────┘
         │
         ▼
 ┌─────────────────┐
-│ Handler Function│
-│ or SQL Query    │
+│ Handler-Funktion│
+│ oder SQL-Query  │
 └─────────────────┘
+```

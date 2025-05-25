@@ -59,6 +59,53 @@ try {
         }
     }
 
+    // --- Authentifizierung prüfen (Basic/Token) ---
+    $serverConfigFile = __DIR__ . '/configs/server.json';
+    $serverConfig = @json_decode(@file_get_contents($serverConfigFile), true) ?: [];
+    $security = $serverConfig['security'] ?? [];
+    $authType = $security['type'] ?? 'none';
+    $authDetails = $security['details'] ?? '';
+
+    if ($authType === 'basic') {
+        $expected = $authDetails;
+        $header = '';
+        // Kompatibilität für verschiedene Server (Apache, Nginx, CGI)
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $header = $_SERVER['HTTP_AUTHORIZATION'];
+        } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+            $header = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+        } elseif (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
+            $header = 'Basic ' . base64_encode($_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW']);
+        }
+        if (!str_starts_with($header, 'Basic ')) {
+            http_response_code(401);
+            header('WWW-Authenticate: Basic realm="API"');
+            echo json_encode(['error' => 'Basic Auth erforderlich']);
+            exit;
+        }
+        $provided = base64_decode(substr($header, 6));
+        if ($provided !== $expected) {
+            http_response_code(401);
+            header('WWW-Authenticate: Basic realm="API"');
+            echo json_encode(['error' => 'Ungültige Zugangsdaten']);
+            exit;
+        }
+    } elseif ($authType === 'token') {
+        $expected = $authDetails;
+        $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+        if (!str_starts_with($header, 'Bearer ')) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Token Auth erforderlich']);
+            exit;
+        }
+        $provided = trim(substr($header, 7));
+        if ($provided !== $expected) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Ungültiger Token']);
+            exit;
+        }
+    }
+
     // Durchläuft alle API-Endpunkte aus der Konfiguration
     foreach ($apis as $index => $api) {
         if (!$api['active']) {

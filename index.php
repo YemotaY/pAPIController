@@ -256,6 +256,29 @@ function displayData($data)
     <!-- JQUERY UI VERWALTUNG -->
     <script src="src/ui_logic.js"></script>
     <script src="src/partials/postman_modal.js"></script>
+    <script>
+    // Auth-Header für alle Requests setzen
+    function getAuthHeaders() {
+        var type = localStorage.getItem('authType') || 'none';
+        var details = localStorage.getItem('authDetails') || '';
+        var headers = {};
+        if (type === 'basic' && details.includes(':')) {
+            headers['Authorization'] = 'Basic ' + btoa(details);
+        } else if (type === 'token' && details) {
+            headers['Authorization'] = 'Bearer ' + details;
+        }
+        return headers;
+    }
+    // Beispiel: Ajax-Requests global patchen (jQuery)
+    $.ajaxSetup({
+        beforeSend: function(xhr) {
+            var headers = getAuthHeaders();
+            for (var k in headers) {
+                xhr.setRequestHeader(k, headers[k]);
+            }
+        }
+    });
+    </script>
 
 </body>
 

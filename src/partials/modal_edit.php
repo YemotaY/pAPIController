@@ -49,6 +49,11 @@
                                             <input class="form-check-input" type="checkbox" name="active" id="activeSwitch">
                                             <label class="form-check-label" for="activeSwitch">Active</label>
                                         </div>
+                                        <div class="col-md-12">
+                                            Kommentar
+                                            <input type="text" class="form-control" name="note"
+                                                placeholder="Kommentar" required>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

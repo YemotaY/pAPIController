@@ -468,3 +468,33 @@ $('.postman-btn').click(function() {
     const method = $(this).data('method');
     window.openPostmanModal(endpoint, method);
 });
+
+// --- Einstellungen speichern (Auth) ---
+function saveAuthSettingsToServer() {
+    var type = localStorage.getItem('authType') || 'none';
+    var details = localStorage.getItem('authDetails') || '';
+    $.ajax({
+        url: baseUrl + '/configs/server.json',
+        type: 'GET',
+        cache: false,
+        dataType: 'json',
+        success: function(config) {
+            config.security = config.security || {};
+            config.security.type = type;
+            config.security.details = details;
+            $.ajax({
+                url: baseUrl + '/configs/server.json',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(config),
+                success: function() {
+                    // Optional: Feedback
+                }
+            });
+        }
+    });
+}
+// Trigger beim Speichern im Modal
+$(document).on('click', '#saveGeneralSettings', function() {
+    saveAuthSettingsToServer();
+});
