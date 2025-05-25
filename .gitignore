@@ -4,6 +4,7 @@ configs/api_history.log
 configs/api_metadata.json
 logs/
 output.log
+*.log
 
 # Ignore local database configs (if sensitive)
 configs/db_config.json
